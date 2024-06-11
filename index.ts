@@ -4,6 +4,7 @@ import { Bot, Context, InlineKeyboard, session, SessionFlavor } from 'grammy';
 interface SessionData {
   state: 'idle' | 'deposit' | 'withdraw';
   amount: number;
+  isFirstInteraction: boolean;
 }
 
 // Define the context type with session
@@ -17,8 +18,10 @@ bot.use(session({
   initial: (): SessionData => ({
     state: 'idle',
     amount: 0,
+    isFirstInteraction: true,
   }),
 }));
+
 // Handle the /start command
 bot.command('start', (ctx) => {
   const keyboard = new InlineKeyboard()
@@ -27,9 +30,20 @@ bot.command('start', (ctx) => {
     .row()
     .text('Summary of Trade', 'summary');
 
-  ctx.reply('Hello there! welcome to Enigma.\nPlease select an option:', {
-    reply_markup: keyboard,
-  });
+  let message = 'Hello there! welcome to Enigma.\nPlease select an option:';
+
+  if (ctx.session.isFirstInteraction) {
+    // Send the picture only on the first interaction
+    ctx.replyWithPhoto('https://images.pexels.com/photos/2156881/pexels-photo-2156881.jpeg?cs=srgb&dl=pexels-anniroenkae-2156881.jpg&fm=jpg', {
+      caption: message,
+      reply_markup: keyboard,
+    });
+    ctx.session.isFirstInteraction = false;
+  } else {
+    ctx.reply(message, {
+      reply_markup: keyboard,
+    });
+  }
 });
 
 // Handle the deposit button

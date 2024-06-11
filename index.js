@@ -8,6 +8,7 @@ bot.use((0, grammy_1.session)({
     initial: () => ({
         state: 'idle',
         amount: 0,
+        isFirstInteraction: true,
     }),
 }));
 // Handle the /start command
@@ -17,9 +18,20 @@ bot.command('start', (ctx) => {
         .text('Withdraw', 'withdraw')
         .row()
         .text('Summary of Trade', 'summary');
-    ctx.reply('Hello there! welcome to Enigma.\nPlease select an option:', {
-        reply_markup: keyboard,
-    });
+    let message = 'Hello there! welcome to Enigma.\nPlease select an option:';
+    if (ctx.session.isFirstInteraction) {
+        // Send the picture only on the first interaction
+        ctx.replyWithPhoto('https://images.pexels.com/photos/2156881/pexels-photo-2156881.jpeg?cs=srgb&dl=pexels-anniroenkae-2156881.jpg&fm=jpg', {
+            caption: message,
+            reply_markup: keyboard,
+        });
+        ctx.session.isFirstInteraction = false;
+    }
+    else {
+        ctx.reply(message, {
+            reply_markup: keyboard,
+        });
+    }
 });
 // Handle the deposit button
 bot.callbackQuery('deposit', (ctx) => {
